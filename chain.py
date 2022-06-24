@@ -43,7 +43,9 @@ class ArgsReader:
 
 class FileReader:
     def read_data(self, filename: str) -> list:
-        filename = self._build_path(filename)
+        filename = Path(filename)
+        if not filename.is_file():
+            raise FileNotFoundError
 
         with filename.open('r') as file:
             data = []
@@ -56,20 +58,6 @@ class FileReader:
 
         return data
 
-    def _build_path(self, filename: str) -> 'Path':
-        if not filename:
-            print('No input file provided. Please enter a filename as a parameter. e.g.: chain source.txt')
-            quit()
-
-        filename = Path(filename)
-
-        if not filename.is_file():
-            print(
-                f"The specified file ('{filename}') does not exist or the path is incorrect. Please check your input and try again.")
-            quit()
-
-        return filename
-
 
 class App:
     def __init__(self):
@@ -77,8 +65,7 @@ class App:
         self._file_reader = FileReader()
 
     def run(self):
-        filename = self._args_reader.get_arg_filename()
-        data = self._file_reader.read_data(filename)
+        data = self._read_data()
         data = self._remove_duplicates(data)
 
         title = self._args_reader.get_arg_title()
@@ -88,6 +75,22 @@ class App:
             self._display_block(block, title)
 
         print(f"{len(data)} elements chained.")
+
+    def _read_data(self) -> list:
+        filename = self._args_reader.get_arg_filename()
+        if not filename:
+            print('No input file provided. Please enter a filename as a parameter. e.g.: chain source.txt')
+            quit()
+
+        data = []
+        try:
+            data = self._file_reader.read_data(filename)
+        except FileNotFoundError:
+            print(f"The specified file ('{filename}') does not exist or the path is incorrect.\n"
+                  "Please check your input and try again.")
+            quit()
+
+        return data
 
     def _get_chainers(self) -> List['ChainerInterface']:
         return [
@@ -100,10 +103,9 @@ class App:
         return list(set(list_to_filter))
 
     def _display_block(self, block: str, title: str) -> None:
-        display_format = f"""{title}
-{'-' * len(title)}
-{block}
-"""
+        display_format = f"{title}\n"\
+                         f"{'-' * len(title)}\n"\
+                         f"{block}\n"
 
         print(display_format)
 
