@@ -7,6 +7,12 @@ if __name__ == '__main__':
         quit()
 
     subject = subject.pop()
-    subject = subject.lower().replace(' ', '_').replace('-', '_').replace(':', '_').replace('&', 'and')
+    subject = subject.lower()\
+        .replace(':', '')\
+        .replace('"', '')\
+        .replace(',', '')\
+        .replace('  ', ' ')\
+        .replace(' ', '_')\
+        .replace('&', 'and')
 
     print(subject)
